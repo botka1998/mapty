@@ -143,7 +143,7 @@ class Workout {
     this.distance = distance;
     this.duration = duration;
     this.coords = coords;
-    this.date = undefined;
+    this.date = new Date();
     this.popup = popup;
   }
   setPopupColor(color) {
@@ -151,6 +151,23 @@ class Workout {
       color === 0 ? colorDark1 : colorDark2;
     this.popup.getElement().children[1].children[0].style.background =
       color === 0 ? colorDark1 : colorDark2;
+  }
+}
+class Running extends Workout {
+  constructor(distance, duration, coords, popup, cadence) {
+    super(distance, duration, coords, popup);
+    this.cadence = cadence;
+  }
+}
+class Cycling extends Workout {
+  constructor(distance, duration, coords, popup, elevationGain) {
+    super(distance, duration, coords, popup);
+    this.elevationGain = elevationGain;
+    this.calcSpeed();
+  }
+  calcSpeed() {
+    this.speed = this.distance / (this.duration / 60);
+    return this.speed;
   }
 }
 //////////////////////////////////////////////////////////////////////////

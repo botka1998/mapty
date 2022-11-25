@@ -22,9 +22,7 @@ inputType.addEventListener("change", function () {
   inputElevation.closest(".form__row").classList.toggle("form__row--hidden");
   inputCadence.closest(".form__row").classList.toggle("form__row--hidden");
 });
-function thisFunction() {
-  updateActive(this);
-}
+
 class App {
   constructor() {
     this.workouts = [];
@@ -59,17 +57,22 @@ class App {
         // get clicked location
         const { lat, lng } = e.latlng;
         this.activeWorkout = this._newWorkout([lat, lng]);
-        this._showForm();
+        App._showForm();
       }.bind(this)
     );
     this.map.on("popupopen", function (e) {
-      updateActive(e.popup);
+      const popup = e.popup;
+      myApp._setActive.bind(popup)();
+      popup
+        .getElement()
+        .addEventListener(
+          "click",
+          myApp._setActive.bind(myApp.activeWorkout.popup)
+        );
     });
+    this.map.on("popupclose", myApp._hideForm);
   }
-  _showForm() {
-    form.classList.remove("hidden");
-    inputDistance.focus();
-  }
+
   _hideForm() {
     // clear input fields and  go back to map
     inputCadence.value =
@@ -78,7 +81,6 @@ class App {
       inputElevation.value =
         "";
     form.classList.add("hidden");
-    this.activeWorkout = undefined;
     mapDiv.focus();
   }
   _newWorkout(location) {
@@ -90,10 +92,10 @@ class App {
       className: "running-popup",
     });
     // set init text
-    const content = L.DomUtil.create("p", "content");
-    content.innerText = "New Workout 💪";
+    // const content = L.DomUtil.create("p", "content");
+    // content.innerText = "New Workout 💪";
     tempPopUp
-      .setContent(content)
+      .setContent("New Workout 💪")
       .setLatLng(new L.latLng(location[0], location[1]));
 
     // bring to front on hover
@@ -114,14 +116,25 @@ class App {
     return tempWorkout;
   }
   _setActive() {
-    this._showForm();
-    this.activeWorkout = this.workouts.find(
+    const popup = this;
+    console.log(popup.getElement().children[0]);
+    App._showForm();
+    myApp.activeWorkout = myApp.workouts.find(
       (workout) => workout.popup === popup
     );
-    this.workouts.forEach((workout) => {
-      workout.popup.getElement() && workout.setPopupColor(0);
+    myApp.workouts.forEach((workout) => {
+      const popup = workout.popup;
+      if (popup.getElement()) {
+        popup.getElement().children[0].style.background = colorDark1;
+        popup.getElement().children[1].children[0].style.background =
+          colorDark1;
+      }
     });
-    this.activeWorkout.setPopupColor(1);
+    myApp.activeWorkout.setPopupColor(1);
+  }
+  static _showForm() {
+    form.classList.remove("hidden");
+    inputDistance.focus();
   }
 }
 
@@ -144,8 +157,9 @@ class Workout {
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 const myApp = new App();
-function updateActive(popup) {
-  myApp._showForm();
+function updateActive() {
+  const popup = this;
+  App._showForm();
   myApp.activeWorkout = myApp.workouts.find(
     (workout) => workout.popup === popup
   );
@@ -177,9 +191,6 @@ form.addEventListener("submit", function (e) {
 
   // add popup click event for later editing
 
-  myApp.activeWorkout.popup
-    .getElement()
-    .addEventListener("click", thisFunction.bind(myApp.activeWorkout.popup));
   // clear input fields and  go back to map
   myApp._hideForm();
 });

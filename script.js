@@ -78,6 +78,7 @@ class App {
       inputElevation.value =
         "";
     form.classList.add("hidden");
+    this.activeWorkout = undefined;
     mapDiv.focus();
   }
   _newWorkout(location) {
@@ -112,6 +113,16 @@ class App {
       .bindPopup(tempPopUp);
     return tempWorkout;
   }
+  _setActive() {
+    this._showForm();
+    this.activeWorkout = this.workouts.find(
+      (workout) => workout.popup === popup
+    );
+    this.workouts.forEach((workout) => {
+      workout.popup.getElement() && workout.setPopupColor(0);
+    });
+    this.activeWorkout.setPopupColor(1);
+  }
 }
 
 class Workout {
@@ -121,6 +132,12 @@ class Workout {
     this.coords = coords;
     this.date = undefined;
     this.popup = popup;
+  }
+  setPopupColor(color) {
+    this.popup.getElement().children[0].style.background =
+      color === 0 ? colorDark1 : colorDark2;
+    this.popup.getElement().children[1].children[0].style.background =
+      color === 0 ? colorDark1 : colorDark2;
   }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -139,10 +156,7 @@ function updateActive(popup) {
       popup.getElement().children[1].children[0].style.background = colorDark1;
     }
   });
-  myApp.activeWorkout.popup.getElement().children[0].style.background =
-    colorDark2;
-  myApp.activeWorkout.popup.getElement().children[1].children[0].style.background =
-    colorDark2;
+  myApp.activeWorkout.setPopupColor(1);
 }
 
 // ADDING/EDITING a WORKOUT(popup content)
@@ -155,15 +169,12 @@ form.addEventListener("submit", function (e) {
   const content = L.DomUtil.create("p", "content");
   content.innerText = `${woType}${inputDistance.value} km`;
   myApp.activeWorkout.distance = Number(inputDistance.value);
-  // show workout info
 
-  ///////////////////////
+  // show workout info
   myApp.activeWorkout.popup.openOn(myApp.map);
   myApp.activeWorkout.popup.setContent(content);
-  myApp.activeWorkout.popup.getElement().children[0].style.background =
-    colorDark1;
-  myApp.activeWorkout.popup.getElement().children[1].children[0].style.background =
-    colorDark1;
+  myApp.activeWorkout.setPopupColor(0);
+
   // add popup click event for later editing
 
   myApp.activeWorkout.popup

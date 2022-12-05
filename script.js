@@ -117,7 +117,7 @@ class App {
   }
   _setActive() {
     const popup = this;
-    console.log(popup.getElement().children[0]);
+    // console.log(popup.getElement().children[0]);
     App._showForm();
     myApp.activeWorkout = myApp.workouts.find(
       (workout) => workout.popup === popup
@@ -145,12 +145,30 @@ class Workout {
     this.coords = coords;
     this.date = new Date();
     this.popup = popup;
+    this.type = undefined;
   }
   setPopupColor(color) {
     this.popup.getElement().children[0].style.background =
       color === 0 ? colorDark1 : colorDark2;
     this.popup.getElement().children[1].children[0].style.background =
       color === 0 ? colorDark1 : colorDark2;
+  }
+  setType(type) {
+    this.type = type
+    if(type==="🚴‍♂️"){
+
+      this.popup.options.className = "cycling-popup"
+      this.popup.getElement().classList.add("cycling-popup")
+      this.popup.getElement().classList.remove("running-popup")
+    }
+    else
+    {
+      this.popup.options.className = "running-popup"
+      this.popup.getElement().classList.add("running-popup")
+      this.popup.getElement().classList.remove("cycling-popup")
+
+    }
+
   }
 }
 class Running extends Workout {
@@ -196,6 +214,7 @@ form.addEventListener("submit", function (e) {
   // GET TYPE OF WORKOUT
   const woType = inputType.value === "running" ? "🏃‍♂️" : "🚴‍♂️";
 
+  if(!+inputDistance.value || !+inputDuration.value) return;
   // create content html element and read input
   const content = L.DomUtil.create("p", "content");
   content.innerText = `${woType}${inputDistance.value} km`;
@@ -205,7 +224,7 @@ form.addEventListener("submit", function (e) {
   myApp.activeWorkout.popup.openOn(myApp.map);
   myApp.activeWorkout.popup.setContent(content);
   myApp.activeWorkout.setPopupColor(0);
-
+  myApp.activeWorkout.setType(woType);
   // add popup click event for later editing
 
   // clear input fields and  go back to map

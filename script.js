@@ -19,8 +19,8 @@ const popups = [];
 const markers = [];
 let activePopup = undefined;
 inputType.addEventListener("change", function () {
-  inputElevation.closest(".form__row").classList.toggle("form__row--hidden");
-  inputCadence.closest(".form__row").classList.toggle("form__row--hidden");
+  // inputElevation.closest(".form__row").classList.toggle("form__row--hidden");
+  // inputCadence.closest(".form__row").classList.toggle("form__row--hidden");
 });
 
 class App {
@@ -146,6 +146,7 @@ class Workout {
     this.date = new Date();
     this.popup = popup;
     this.type = undefined;
+    this.id = Math.random();
   }
   setPopupColor(color) {
     this.popup.getElement().children[0].style.background =
@@ -154,21 +155,16 @@ class Workout {
       color === 0 ? colorDark1 : colorDark2;
   }
   setType(type) {
-    this.type = type
-    if(type==="🚴‍♂️"){
-
-      this.popup.options.className = "cycling-popup"
-      this.popup.getElement().classList.add("cycling-popup")
-      this.popup.getElement().classList.remove("running-popup")
+    this.type = type;
+    if (type === "🚴‍♂️") {
+      this.popup.options.className = "cycling-popup";
+      this.popup.getElement().classList.add("cycling-popup");
+      this.popup.getElement().classList.remove("running-popup");
+    } else {
+      this.popup.options.className = "running-popup";
+      this.popup.getElement().classList.add("running-popup");
+      this.popup.getElement().classList.remove("cycling-popup");
     }
-    else
-    {
-      this.popup.options.className = "running-popup"
-      this.popup.getElement().classList.add("running-popup")
-      this.popup.getElement().classList.remove("cycling-popup")
-
-    }
-
   }
 }
 class Running extends Workout {
@@ -214,19 +210,50 @@ form.addEventListener("submit", function (e) {
   // GET TYPE OF WORKOUT
   const woType = inputType.value === "running" ? "🏃‍♂️" : "🚴‍♂️";
 
-  if(!+inputDistance.value || !+inputDuration.value) return;
+  if (!+inputDistance.value || !+inputDuration.value) return;
   // create content html element and read input
   const content = L.DomUtil.create("p", "content");
-  content.innerText = `${woType}${inputDistance.value} km`;
+  content.innerText = `${woType} ${inputDistance.value} km ${inputDuration.value} min`;
   myApp.activeWorkout.distance = Number(inputDistance.value);
-
+  myApp.activeWorkout.duration = Number(inputDuration.value);
   // show workout info
   myApp.activeWorkout.popup.openOn(myApp.map);
   myApp.activeWorkout.popup.setContent(content);
   myApp.activeWorkout.setPopupColor(0);
   myApp.activeWorkout.setType(woType);
   // add popup click event for later editing
-
+  const [_, month, day] = myApp.activeWorkout.date.toString().split(" ");
+  // console.log(month, +day);
+  containerWorkouts.insertAdjacentHTML(
+    "afterbegin",
+    `<li class="workout workout--${inputType.value}" data-id= ${
+      myApp.activeWorkout.id
+    }>
+          <h2 class="workout__title">${
+            inputType.value.charAt(0).toUpperCase() + inputType.value.slice(1)
+          } on ${[month, +day].join(" ")}</h2>
+          <div class="workout__details">
+            <span class="workout__icon">${woType}</span>
+            <span class="workout__value">${inputDistance.value}</span>
+            <span class="workout__unit">km</span>
+          </div>
+          <div class="workout__details">
+            <span class="workout__icon">⏱</span>
+            <span class="workout__value">${inputDuration.value}</span>
+            <span class="workout__unit">min</span>
+          </div>`
+    // <div class="workout__details">
+    //   <span class="workout__icon">⚡️</span>
+    //   <span class="workout__value">4.6</span>
+    //   <span class="workout__unit">min/km</span>
+    // </div>
+    // <div class="workout__details">
+    //   <span class="workout__icon">🦶🏼</span>
+    //   <span class="workout__value">178</span>
+    //   <span class="workout__unit">spm</span>
+    // </div>
+    // </li>`
+  );
   // clear input fields and  go back to map
   myApp._hideForm();
 });
